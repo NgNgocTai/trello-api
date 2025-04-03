@@ -1,7 +1,7 @@
 import Joi from 'joi'
 import { StatusCodes } from 'http-status-codes'
 
-const createNew = async (req, res) => {
+const createNew = async (req, res,next) => {
   const correctCondition = Joi.object({
     title: Joi.string().required().min(3).max(50).trim().strict().messages({
       'any.required': 'Title is required (trungquandev)',
@@ -16,9 +16,9 @@ const createNew = async (req, res) => {
   try {
     await correctCondition.validateAsync(req.body, { abortEarly:false })
     //validate dữ liệu xong xuôi hợp lệ thì cho request đi tiếp sang controller
-    // next()
+    // eslint-disable-next-line no-undef
+    next()
     // res.status(StatusCodes.CREATED).json({ message:'Note: API post list post' })
-
   } catch (err) {
     console.log(err)
     res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
