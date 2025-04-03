@@ -2,15 +2,19 @@ import express from 'express'
 import exitHook from 'async-exit-hook'
 import { closeDb, connectDb, getDb } from '~/config/mongodb'
 import { env } from '~/config/environment'
+import { APIs_V1 } from '~/routes/v1/index'
+
 const startServer = () => {
   const app = express()
   // Đã được lưu trong biến môi trường hết rồi
   // const hostname = 'localhost'
   // const port = 8017
-  app.get('/', async (req, res) =>{
-    // console.log(await getDb().listCollections().toArray())
-    res.send('Hello World!' +env.AUTHOR)
-  })
+
+  //Enable req.body json data
+  app.use(express.json())
+
+  app.use('/v1', APIs_V1)
+
   app.listen(env.APP_PORT, env.APP_HOST, () => {
     // eslint-disable-next-line no-console
     console.log(`3. Hello Ngọc Tài Dev, I am running at http://${ env.APP_HOST }:${ env.APP_PORT }/`)
