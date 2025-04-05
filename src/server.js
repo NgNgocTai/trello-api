@@ -3,7 +3,8 @@ import exitHook from 'async-exit-hook'
 import { closeDb, connectDb, getDb } from '~/config/mongodb'
 import { env } from '~/config/environment'
 import { APIs_V1 } from '~/routes/v1/index'
-
+import { StatusCodes } from 'http-status-codes'
+import { errorHandlingMiddleware } from './middlewares/errorHandlingMiddleware'
 const startServer = () => {
   const app = express()
   // Đã được lưu trong biến môi trường hết rồi
@@ -14,6 +15,9 @@ const startServer = () => {
   app.use(express.json())
 
   app.use('/v1', APIs_V1)
+
+  //Middleware xử lý lỗi tập trung
+  app.use(errorHandlingMiddleware)
 
   app.listen(env.APP_PORT, env.APP_HOST, () => {
     // eslint-disable-next-line no-console

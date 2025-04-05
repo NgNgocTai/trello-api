@@ -1,5 +1,5 @@
 import { StatusCodes } from 'http-status-codes'
-
+import ApiError from '~/utils/ApiError'
 const createNew = async (req, res, next) => {
   try {
     console.log('req.body:' + req.body)
@@ -11,13 +11,13 @@ const createNew = async (req, res, next) => {
     // console.log('req.jwtDecoded: ', req.jwtDecoded)
     //Tiếp đến là điều hướng dữ liệu sang tầng service
 
+    // throw new ApiError(StatusCodes.BAD_GATEWAY, 'Khong on roi')
     //Có kết quả thì trả về Client
     res.status(StatusCodes.CREATED).json({ message:'Post from controller: API post list post' })
   } catch (err) {
-    // eslint-disable-next-line no-console
-    console.log(err)
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      error:err.message
-    })
+    next(err) // Chuyển qua middleware xử lý lỗi tập trung 
+    // res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+    //   error:err.message
+    // })
 }}
 export const boardController = { createNew }
