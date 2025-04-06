@@ -17,16 +17,34 @@ const BOARD_COLLECTION_SCHEMA = Joi.object({
   _destroy: Joi.boolean().default(false)
 })
 
+const validateBeforeCreate = async(data) => {
+  return await BOARD_COLLECTION_SCHEMA.validateAsync(data, { abortEarly:false }) 
+}
+
 const createNew = async (data) => {
   try {
-    const createdBoard = await getDb().collection(BOARD_COLLECTION_NAME).insertOne(data)
+    const validData = await validateBeforeCreate(data)
+    const createdBoard = await getDb().collection(BOARD_COLLECTION_NAME).insertOne(validData)
     return createdBoard
   } catch (error) {
     throw new Error(error) // new Error để lấy dc cả StackTrace, error không thì không lấy được 
   }
 }
 
+//Chỉ để lấy board không thôi
 const findOneById = async(id) => {
+  try {
+    const result = await getDb().collection(BOARD_COLLECTION_NAME).findOne({
+      _id:new ObjectId(id)
+    })
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+//Query tổng hợp (aggregate) để lấy toàn bô column, card thuộc về board
+const getDetails = async(id) => {
   try {
     const result = await getDb().collection(BOARD_COLLECTION_NAME).findOne({
       _id:new ObjectId(id)
@@ -41,5 +59,6 @@ export const boardModel = {
   BOARD_COLLECTION_NAME,
   BOARD_COLLECTION_SCHEMA,
   createNew,
-  findOneById
+  findOneById,
+  getDetails
 }

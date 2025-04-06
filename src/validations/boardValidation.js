@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes'
 import ApiError from '~/utils/ApiError'
 
 const createNew = async (req, res, next) => {
+  //validate du lieu gui len tu FE
   const correctCondition = Joi.object({
     title: Joi.string().required().min(3).max(50).trim().strict().messages({
       'any.required': 'Title is required (trungquandev)',
