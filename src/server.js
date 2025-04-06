@@ -5,12 +5,15 @@ import { env } from '~/config/environment'
 import { APIs_V1 } from '~/routes/v1/index'
 import { StatusCodes } from 'http-status-codes'
 import { errorHandlingMiddleware } from './middlewares/errorHandlingMiddleware'
+import cors from 'cors'
+import { corsOptions } from '~/config/cors'
 const startServer = () => {
   const app = express()
+  //Xử lý và config cors
+  app.use(cors(corsOptions))
   // Đã được lưu trong biến môi trường hết rồi
   // const hostname = 'localhost'
   // const port = 8017
-
   //Enable req.body json data
   app.use(express.json())
 
