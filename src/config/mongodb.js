@@ -1,5 +1,3 @@
-// K82YyhPNDTNs7joC
-
 import { MongoClient, ServerApiVersion } from 'mongodb'
 import { env } from '~/config/environment'
 
@@ -23,7 +21,7 @@ export const connectDb = async() =>{
 //funtion này để export ra trelloDatabaseInstance sau khi đã connect tới mongo để có thể dùng ở nhiều nơi khác 
 //func nay chi dc goi sau khi ket noi mongodb thanh cong
 export const getDb = () => {
-  if (!trelloDatabaseInstance) 
+  if (!trelloDatabaseInstance)
     throw new Error('must connect to db first')
   return trelloDatabaseInstance
 }
