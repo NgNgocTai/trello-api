@@ -24,9 +24,9 @@ const validateBeforeCreate = async(data) => {
 const createNew = async (data) => {
   try {
     const validData = await validateBeforeCreate(data)
-    //Biến đổi dữ liệu id từ string --> objectId
+    //Sau khi validate dữ liệu hợp lệ rồi chuẩn bị nhét vào db thì đổi dữ liệu id từ string --> objectId
     const createdColumn = await getDb().collection(COLUMN_COLLECTION_NAME).insertOne({
-      ...validData, 
+      ...validData,
       boardId:new ObjectId(validData.boardId)
     })
     return createdColumn
@@ -46,9 +46,28 @@ const findOneById = async(id) => {
   }
 }
 
+const pushCardOrderIds = async (card) => {
+  try {
+    const updateColumn = await getDb().collection(COLUMN_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(card.columnId) },
+      {
+        $push: {
+          cardOrderIds: new ObjectId(card._id)
+        }
+      },
+      { returnDocument: 'after' } 
+    )
+    return updateColumn.value
+  } catch (error) {
+    throw new Error(error) 
+  }
+}
+
 export const columnModel = {
   COLUMN_COLLECTION_NAME,
   COLUMN_COLLECTION_SCHEMA,
   createNew,
-  findOneById
+  findOneById,
+  pushCardOrderIds
+
 }
