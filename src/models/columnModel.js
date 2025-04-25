@@ -55,11 +55,11 @@ const pushCardOrderIds = async (card) => {
           cardOrderIds: new ObjectId(card._id)
         }
       },
-      { returnDocument: 'after' } 
+      { returnDocument: 'after' }
     )
-    return updateColumn.value
+    return updateColumn
   } catch (error) {
-    throw new Error(error) 
+    throw new Error(error)
   }
 }
 
