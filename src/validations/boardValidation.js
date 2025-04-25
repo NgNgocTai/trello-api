@@ -7,11 +7,11 @@ const createNew = async (req, res, next) => {
   //validate du lieu gui len tu FE
   const correctCondition = Joi.object({
     title: Joi.string().required().min(3).max(50).trim().strict().messages({
-      'any.required': 'Title is required (trungquandev)',
-      'string.empty': 'Title is not allowed to be empty (trungquandev)',
-      'string.min': 'Title min 3 chars (trungquandev)',
-      'string.max': 'Title max 50 chars (trungquandev)',
-      'string.trim': 'Title must not have leading or trailing whitespace (trungquandev)'
+      'any.required': 'Title is required ',
+      'string.empty': 'Title is not allowed to be empty ',
+      'string.min': 'Title min 3 chars ',
+      'string.max': 'Title max 50 chars ',
+      'string.trim': 'Title must not have leading or trailing whitespace '
     }),
     description:Joi.string().required().min(3).max(256).trim().strict(),
     type:Joi.string().valid(BOARD_TYPES.PUBLIC, BOARD_TYPES.PRIVATE).required()

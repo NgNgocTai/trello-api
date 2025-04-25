@@ -1,11 +1,17 @@
 import express from 'express'
-import { StatusCodes } from 'http-status-codes'
 import { boardRoutes } from '~/routes/v1/boardRoute'
+import { columnRoutes } from '~/routes/v1/columnRoute'
+import { cardRoutes } from '~/routes/v1/cardRoute'
 const Router = express.Router()
 
 // Board Apis
 Router.use('/boards', boardRoutes)
 
+// Column Apis
+Router.use('/columns', columnRoutes)
+
+// Card Apis
+Router.use('/cards', cardRoutes)
 // //Check status
 // Router.get('/status', (req, res) => {
 //   res.status(StatusCodes.OK).json({

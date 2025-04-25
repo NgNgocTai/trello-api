@@ -29,6 +29,7 @@ const getDetails = async (id) => {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Board not found')
     }
     //CloneDeep để tạo ra cái mới như cái board lúc đầu, không làm ảnh hưởng tới cái cũ
+    //Đoạn này phải format lại ctdl cho giống cấu trúc bên FE(board{column{card}}) còn lấy ở models thì column với card đang đồng cấp
     const resBoard = cloneDeep(board)
     resBoard.columns.forEach(column => {
       column.cards = resBoard.cards.filter(card => card.columnId.toString() === column._id.toString())
