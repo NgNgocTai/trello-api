@@ -40,6 +40,20 @@ const getDetails = async (id) => {
     throw error
   }
 }
+
+const updateBoard = async (boardId, reqBody) => {
+  // eslint-disable-next-line no-useless-catch
+  try {
+    const updateData = {
+      ...reqBody,
+      updatedAt:Date.now()
+    }
+    const resBoard = await boardModel.updateBoard(boardId, updateData)
+    return resBoard
+  } catch (error) {
+    throw error
+  }
+}
 export const boardService = {
-  createNew, getDetails
+  createNew, getDetails, updateBoard
 }

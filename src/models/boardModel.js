@@ -99,12 +99,26 @@ const pushColumnOrderIds = async (column) => {
   }
 }
 
-
+const updateBoard = async (boardId, updateData) => {
+  try {
+    const updatedBoard = await getDb().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(boardId) },
+      {
+        $set:updateData
+      },
+      { returnDocument: 'after' } // native driver nên dùng returnDocument thay vì new
+    )
+    return updatedBoard
+  } catch (error) {
+    throw new Error(error)
+  }
+}
 export const boardModel = {
   BOARD_COLLECTION_NAME,
   BOARD_COLLECTION_SCHEMA,
   createNew,
   findOneById,
   getDetails,
-  pushColumnOrderIds
+  pushColumnOrderIds,
+  updateBoard
 }
