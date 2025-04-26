@@ -18,7 +18,20 @@ const createNew = async (data) => {
     throw error
   }
 }
-
+const updateColumn = async (columnId, reqBody) => {
+  // eslint-disable-next-line no-useless-catch
+  try {
+    const updateData = {
+      ...reqBody,
+      updatedAt:Date.now()
+    }
+    const resColumn = await columnModel.updateColumn(columnId, updateData)
+    return resColumn
+  } catch (error) {
+    throw error
+  }
+}
 export const columnService= {
-  createNew
+  createNew,
+  updateColumn
 }

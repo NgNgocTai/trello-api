@@ -20,6 +20,8 @@ const BOARD_COLLECTION_SCHEMA = Joi.object({
   updatedAt: Joi.date().timestamp('javascript').default(null),
   _destroy: Joi.boolean().default(false)
 })
+//Chỉ định ra Fields mà không muốn cập nhật trong hàm update(tránh trường hợp bên client đẩy lên các field ko nên update)
+const INVALID_UPDATE_FIELDS =['id', 'createdAt']
 
 const validateBeforeCreate = async(data) => {
   return await BOARD_COLLECTION_SCHEMA.validateAsync(data, { abortEarly:false }) 
@@ -101,6 +103,16 @@ const pushColumnOrderIds = async (column) => {
 
 const updateBoard = async (boardId, updateData) => {
   try {
+    //Lọc những fields chúng ta không cho phép cập nhật linh tinh
+    Object.keys(updateData).forEach(fieldName => {
+      if (INVALID_UPDATE_FIELDS.includes(fieldName)) {
+        delete updateData[fieldName]
+      }
+    })
+    //Đối với dữ liệu liên quan objectId thì sửa ở đây, phải fix lại ko thì columnOrderIds sau khi kéo thả sẽ là String hết, do FE đẩy lên là String mà
+    if (updateData.columnOrderIds) {
+      updateData.columnOrderIds = updateData.columnOrderIds.map(_id => (new ObjectId(_id)))
+    }
     const updatedBoard = await getDb().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
       { _id: new ObjectId(boardId) },
       {

@@ -54,8 +54,26 @@ const updateBoard = async (req, res, next) => {
     //   errors: new Error(err).message
     // })
 }}
+const moveCardToDifferentColumn = async (req, res, next) => {
+  //validate du lieu gui len tu FE
+  const correctCondition = Joi.object({
+    currentCardId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
+    prevColumnId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
+    prevCardOrderIds: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
+    nextColumnId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
+    nextCardOrderIds: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([])
+  })
 
+  try {
+    await correctCondition.validateAsync(req.body, { abortEarly:false})
+    next()
+  } catch (err) {
+    const customError = new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, err.message)
+    //Thay việc trả về client thủ công bằng cách đưa err vào next để xử lý lỗi tập trung ở middleware
+    next(customError)
+}}
 export const boardValidation = {
   createNew,
-  updateBoard
+  updateBoard,
+  moveCardToDifferentColumn
 }

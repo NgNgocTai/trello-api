@@ -15,6 +15,8 @@ const CARD_COLLECTION_SCHEMA = Joi.object({
   updatedAt: Joi.date().timestamp('javascript').default(null),
   _destroy: Joi.boolean().default(false)
 })
+//Chỉ định ra Fields mà không muốn cập nhật trong hàm update(tránh trường hợp bên client đẩy lên các field ko nên update)
+const INVALID_UPDATE_FIELDS =['id', 'createdAt', 'boardId']
 
 const validateBeforeCreate = async(data) => {
   return await CARD_COLLECTION_SCHEMA .validateAsync(data, { abortEarly:false }) 
@@ -34,20 +36,55 @@ const createNew = async (data) => {
     throw new Error(error)
   }
 }
-const findOneById = async(id) => {
+const findOneById = async(cardId, updateData) => {
   try {
-    const result = await getDb().collection(CARD_COLLECTION_NAME).findOne({
-      _id:new ObjectId(id)
-    })
+
+    if (updateData.columnId) {
+      updateData.columnId = new ObjectId(updateData.columnId)
+    }
+
+    const result = await getDb().collection(CARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(cardId) },
+      {
+        $set:updateData
+      },
+      { returnDocument: 'after' } // native driver nên dùng returnDocument thay vì new
+    )
     return result
   } catch (error) {
     throw new Error(error)
   }
 }
+const updateCard = async (cardId, updateData) => {
+  try {
+    //Lọc những fields chúng ta không cho phép cập nhật linh tinh
+    Object.keys(updateData).forEach(fieldName => {
+      if (INVALID_UPDATE_FIELDS.includes(fieldName)) {
+        delete updateData[fieldName]
+      }
+    })
 
+    //Xu ly lien quan toi objectId
+    if (updateData.columnId) {
+      updateData.columnId = new ObjectId(updateData.columnId)
+    }
+
+    const updatedCard = await getDb().collection(CARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(cardId) },
+      {
+        $set:updateData
+      },
+      { returnDocument: 'after' } // native driver nên dùng returnDocument thay vì new
+    )
+    return updatedCard
+  } catch (error) {
+    throw new Error(error)
+  }
+}
 export const cardModel = {
   CARD_COLLECTION_NAME,
   CARD_COLLECTION_SCHEMA,
   createNew,
-  findOneById
+  findOneById,
+  updateCard
 }
