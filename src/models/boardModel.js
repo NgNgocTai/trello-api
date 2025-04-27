@@ -38,10 +38,10 @@ const createNew = async (data) => {
 }
 
 //Chỉ để lấy board không thôi
-const findOneById = async(id) => {
+const findOneById = async(boardId) => {
   try {
     const result = await getDb().collection(BOARD_COLLECTION_NAME).findOne({
-      _id:new ObjectId(id)
+      _id:new ObjectId(boardId)
     })
     return result
   } catch (error) {
@@ -125,6 +125,24 @@ const updateBoard = async (boardId, updateData) => {
     throw new Error(error)
   }
 }
+// Lấy 1 phần tử columnId ra khỏi mảng columnOrderIds
+const pullColumnOrderIds = async (column) => {
+  try {
+    const updateBoard = await getDb()
+      .collection(BOARD_COLLECTION_NAME)
+      .findOneAndUpdate(
+        { _id: new ObjectId(column.boardId) }, // tìm board theo id
+        {
+          $pull: { columnOrderIds: new ObjectId(column._id) }
+        },
+        { returnDocument: 'after' } // trả về document mới sau update
+      )
+
+    return updateBoard
+  } catch (error) {
+    throw new Error(error)
+  }
+}
 export const boardModel = {
   BOARD_COLLECTION_NAME,
   BOARD_COLLECTION_SCHEMA,
@@ -132,5 +150,6 @@ export const boardModel = {
   findOneById,
   getDetails,
   pushColumnOrderIds,
-  updateBoard
+  updateBoard,
+  pullColumnOrderIds
 }

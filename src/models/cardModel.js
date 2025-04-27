@@ -36,24 +36,15 @@ const createNew = async (data) => {
     throw new Error(error)
   }
 }
-const findOneById = async(cardId, updateData) => {
+const findOneById = async(cardId) => {
   try {
-
-    if (updateData.columnId) {
-      updateData.columnId = new ObjectId(updateData.columnId)
-    }
-
-    const result = await getDb().collection(CARD_COLLECTION_NAME).findOneAndUpdate(
-      { _id: new ObjectId(cardId) },
-      {
-        $set:updateData
-      },
-      { returnDocument: 'after' } // native driver nên dùng returnDocument thay vì new
-    )
+    const result = await getDb().collection(CARD_COLLECTION_NAME).findOne({
+      _id:new ObjectId(cardId)
+    })
     return result
   } catch (error) {
     throw new Error(error)
-  }
+    }
 }
 const updateCard = async (cardId, updateData) => {
   try {
@@ -74,9 +65,20 @@ const updateCard = async (cardId, updateData) => {
       {
         $set:updateData
       },
-      { returnDocument: 'after' } // native driver nên dùng returnDocument thay vì new
+      { returnDocument: 'after' } 
     )
     return updatedCard
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+const deleteManyCardByColumnId= async(columnId) => {
+  try {
+    const result = await getDb().collection(CARD_COLLECTION_NAME).deleteMany(
+      { columnId: new ObjectId(columnId)}
+    )
+    console.log(result)
+    return result
   } catch (error) {
     throw new Error(error)
   }
@@ -86,5 +88,6 @@ export const cardModel = {
   CARD_COLLECTION_SCHEMA,
   createNew,
   findOneById,
-  updateCard
+  updateCard,
+  deleteManyCardByColumnId
 }
