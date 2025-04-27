@@ -21,10 +21,19 @@ const startServer = () => {
   //Middleware xử lý lỗi tập trung
   app.use(errorHandlingMiddleware)
 
-  app.listen(env.APP_PORT, env.APP_HOST, () => {
-    // eslint-disable-next-line no-console
-    console.log(`3. Hello Ngọc Tài Dev, I am running at http://${ env.APP_HOST }:${ env.APP_PORT }/`)
-  })
+  //Môi trường Production(cụ thể là support Render)
+  if (env.BUILD_MODE === 'production') {
+    app.listen(process.env.PORT, () => {
+      // eslint-disable-next-line no-console
+      console.log(`3. Production: Hello Ngọc Tài Dev, I am running at port ${ process.env.PORT }/`)
+    })
+  } else {
+    //Môi trường local dev
+    app.listen(env.LOCAL_DEV_APP_PORT, env.LOCAL_DEV_APP_HOST, () => {
+      // eslint-disable-next-line no-console
+      console.log(`3.Local dev: Hello Ngọc Tài Dev, I am running at http://${ env.LOCAL_DEV_APP_HOST }:${ env.LOCAL_DEV_APP_PORT }/`)
+    })
+  }
 
   //Thực hiện tác vụ clean up trước khi dừng server, giúp chỉ dừng server trong trường hợp đặc bt: ctrl C, error,..
   exitHook(() => {
