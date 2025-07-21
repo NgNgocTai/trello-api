@@ -1,17 +1,22 @@
 import express from 'express'
-import { boardRoutes } from '~/routes/v1/boardRoute'
-import { columnRoutes } from '~/routes/v1/columnRoute'
-import { cardRoutes } from '~/routes/v1/cardRoute'
+import { boardRoute } from '~/routes/v1/boardRoute'
+import { columnRoute } from '~/routes/v1/columnRoute'
+import { cardRoute } from '~/routes/v1/cardRoute'
+import { userRoute } from '~/routes/v1/userRoute'
 const Router = express.Router()
 
 // Board Apis
-Router.use('/boards', boardRoutes)
+Router.use('/boards', boardRoute)
 
 // Column Apis
-Router.use('/columns', columnRoutes)
+Router.use('/columns', columnRoute)
 
 // Card Apis
-Router.use('/cards', cardRoutes)
+Router.use('/cards', cardRoute)
+
+// User Apis
+Router.use('/users', userRoute)
+
 // //Check status
 // Router.get('/status', (req, res) => {
 //   res.status(StatusCodes.OK).json({
