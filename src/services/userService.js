@@ -96,9 +96,9 @@ const login = async (reqBody) => {
     }
 
     // Tạo ra 2 loại token, accessToken và refreshToken để trả về cho phía FE
-    const accessToken = await JwtProvider.generateToken(userInfo, env.ACCESS_TOKEN_SECRET_SIGNATURE, 5)
+    const accessToken = await JwtProvider.generateToken(userInfo, env.ACCESS_TOKEN_SECRET_SIGNATURE, env.ACCESS_TOKEN_LIFE)
 
-    const refreshToken = await JwtProvider.generateToken(userInfo, env.REFRESH_TOKEN_SECRET_SIGNATURE, env.ACCESS_TOKEN_LIFE)
+    const refreshToken = await JwtProvider.generateToken(userInfo, env.REFRESH_TOKEN_SECRET_SIGNATURE, env.REFRESH_TOKEN_LIFE)
 
     // Trả về thông tin của user kèm theo 2 cái token vừa tạo ra
     return { accessToken, refreshToken, ...pickUser(existUser) }
