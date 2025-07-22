@@ -17,11 +17,5 @@ Router.use('/cards', cardRoute)
 // User Apis
 Router.use('/users', userRoute)
 
-// //Check status
-// Router.get('/status', (req, res) => {
-//   res.status(StatusCodes.OK).json({
-//     message:'APIs v1 is ready to use'
-//   })
-// })
 
 export const APIs_V1 = Router

@@ -6,8 +6,18 @@ import { APIs_V1 } from '~/routes/v1/index'
 import { errorHandlingMiddleware } from './middlewares/errorHandlingMiddleware'
 import cors from 'cors'
 import { corsOptions } from '~/config/cors'
+import cookieParser from 'cookie-parser'
 const startServer = () => {
   const app = express()
+  // Fix cái vụ Cache from disk của ExpressJS
+  // https://stackoverflow.com/a/53240717/8324172
+  app.use((req, res, next) => {
+    res.set('Cache-Control', 'no-store')
+    next()
+  })
+  //Cấu hình cookiePaser (để đọc được cookie client gửi lên cho server check)
+  app.use(cookieParser())
+
   //Xử lý và config cors
   app.use(cors(corsOptions))
   // Đã được lưu trong biến môi trường hết rồi
