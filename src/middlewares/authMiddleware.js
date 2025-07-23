@@ -30,7 +30,7 @@ const isAuthorized = async (req, res, next) => {
       return
     }
     //Nếu accessToken không hợp lệ vì các lý do khác --> trả về lỗi luôn
-    next(new ApiError(StatusCodes.FORBIDDEN, 'Unauthorized!'))
+    next(new ApiError(StatusCodes.UNAUTHORIZED, 'Unauthorized!'))
     return
   }
 }
