@@ -20,9 +20,7 @@ const startServer = () => {
 
   //Xử lý và config cors
   app.use(cors(corsOptions))
-  // Đã được lưu trong biến môi trường hết rồi
-  // const hostname = 'localhost'
-  // const port = 8017
+  
   //Enable req.body json data
   app.use(express.json())
 

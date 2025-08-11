@@ -74,10 +74,25 @@ const refreshToken = async (req, res, next) => {
   }
 }
 
+const update = async (req, res, next) => { // Thêm async
+  try {
+    const userId = req.jwtDecoded._id
+    const userAvatarFile = req.file // trả ra undefined nếu không có multer
+    // console.log('🚀 ~ update ~ userAvatarFile:', userAvatarFile)
+
+    // Thêm await để đợi hàm service thực thi xong và trả về kết quả
+    const updatedUser = await userService.update(userId, req.body, userAvatarFile)
+    res.status(StatusCodes.OK).json(updatedUser)
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const userController = {
   createNew,
   verifyAccount,
   login,
   logout,
-  refreshToken
+  refreshToken,
+  update
 }

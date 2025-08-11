@@ -9,6 +9,8 @@ import { WEBSITE_DOMAIN } from '~/utils/constants'
 import { ResendProvider } from '~/providers/ResendProvider'
 import { JwtProvider } from '~/providers/JwtProvider'
 import { env } from '~/config/environment'
+import { CloudinaryProvider } from '~/providers/CloudinaryProvider'
+
 const createNew = async (reqBody) => {
   try {
     // Kiểm tra xem email đã tồn tại hay chưa
@@ -131,9 +133,50 @@ const refreshToken = async (clientRefreshToken) => {
   }
 }
 
+const update = async (userId, reqBody, userAvatarFile) => {
+  try {
+    // kiểm tra thêm cho chắc
+    const existUser = await userModel.findOneById(userId)
+    //Các bước kiểm tra cần thiết
+    if (!existUser) throw new ApiError(StatusCodes.NOT_FOUND, 'Account not found')
+    if (!existUser.isActive)
+      throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Your account is not activated yet, please verify your account')
+
+    //Khởi tạo kết quả updated user
+    let updatedUser = {}
+
+    //Trường hợp đổi mật khẩu
+    if (reqBody.current_password && reqBody.new_password) {
+      //Kiểm tra mật khẩu người dùng nhập vào có đúng không
+      if (!bcryptjs.compareSync(reqBody.current_password, existUser.password)) {
+        throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Your email or password is incorrect')
+      }
+      //Nếu như đúng thì hash new_password rồi lưu vào database
+      updatedUser = await userModel.update(existUser._id, {
+        password: bcryptjs.hashSync(reqBody.new_password, 8)
+      })
+    } else if (userAvatarFile) {
+      //Trường hợp upload file lên cloudinary\
+      const uploadResult = await CloudinaryProvider.streamUpload(userAvatarFile.buffer, 'users')
+      console.log('🚀 ~ update ~ uploadResult:', uploadResult)
+
+      //Lưu lại url của cái file ảnh vào trong db
+      updatedUser = await userModel.update(existUser._id, {
+        avatar: uploadResult.secure_url
+      })
+    } else {
+      updatedUser = await userModel.update(existUser._id, reqBody)
+    }
+    return pickUser(updatedUser)
+  } catch (error) {
+    throw error
+  }
+}
+
 export const userService = {
   createNew,
   verifyAccount,
   login,
-  refreshToken
+  refreshToken,
+  update
 }
