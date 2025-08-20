@@ -22,7 +22,6 @@ const BOARD_COLLECTION_SCHEMA = Joi.object({
   memberIds: Joi.array().items(
     Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
   ).default([]),
-
   createdAt: Joi.date().timestamp('javascript').default(Date.now),
   updatedAt: Joi.date().timestamp('javascript').default(null),
   _destroy: Joi.boolean().default(false)
@@ -183,6 +182,7 @@ const getBoards = async (userId, page, itemsPerPage) => {
     ).toArray()
     console.log('query:', query)
     const res = query[0]
+    console.log('Boards result:', res.queryBoards, 'Total:', res.queryTotalBoards[0]?.countedAllBoards)
 
     return {
       boards:res.queryBoards || [],

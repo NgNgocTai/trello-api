@@ -36,9 +36,10 @@ const getDetails = async (req, res, next) => {
 const getBoards = async (req, res, next) => {
   try {
     const userId = req.jwtDecoded._id
+    console.log(userId)
     //Lấy params là page và itemsPerPage truyền trong query từ url
     const { page, itemsPerPage } = req.query
-    const result = boardService.getBoards(userId, page, itemsPerPage)
+    const result = await boardService.getBoards(userId, page, itemsPerPage)
 
     res.status(StatusCodes.OK).json(result)
   } catch (error) {

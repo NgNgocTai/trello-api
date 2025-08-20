@@ -23,7 +23,7 @@ const isAuthorized = async (req, res, next) => {
     next()
 
   } catch (error) {
-    console.log("🚀 ~ isAuthorized ~ error:", error)
+    // console.log("🚀 ~ isAuthorized ~ error:", error)
     //Nếu accessToken hết hạn -> trả về mã GONE (410) cho FE gọi api refreshToken
     if (error?.message?.includes('jwt expired')) {
       next(new ApiError(StatusCodes.GONE, 'Need to refresh token'))
