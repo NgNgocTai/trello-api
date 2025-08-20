@@ -33,10 +33,11 @@ const validateBeforeCreate = async(data) => {
   return await BOARD_COLLECTION_SCHEMA.validateAsync(data, { abortEarly:false })
 }
 
-const createNew = async (data) => {
+const createNew = async (userId, data) => {
   try {
     const validData = await validateBeforeCreate(data)
-    const createdBoard = await getDb().collection(BOARD_COLLECTION_NAME).insertOne(validData)
+    const createdBoard = await getDb().collection(BOARD_COLLECTION_NAME).insertOne(
+      { ...validData, ownerIds:[new ObjectId(userId)] })
     return createdBoard
   } catch (error) {
     throw new Error(error) // new Error để lấy dc cả StackTrace, error không thì không lấy được
@@ -56,14 +57,22 @@ const findOneById = async(boardId) => {
 }
 
 //Query tổng hợp (aggregate) để lấy toàn bô column, card thuộc về board
-const getDetails = async(id) => {
+const getDetails = async(userId, boardId) => {
   try {
+    //Điều kiện
+    const queryConditions = [
+      { _id: new ObjectId(boardId) },
+      //Board chưa bị xóa
+      { _destroy:false },
+      //user thực hiện request phải nằm trong owner hoặc member
+      { $or:[
+        { ownerIds: { $all: [new ObjectId(userId)] } },
+        { memberIds: { $all: [new ObjectId(userId)] } }
+      ] }
+    ]
     // const result = await getDb().collection(BOARD_COLLECTION_NAME).findOne({ _id:new ObjectId(id) })
     const result = await getDb().collection(BOARD_COLLECTION_NAME).aggregate([
-      { $match: {
-        _id: new ObjectId(id),
-        _destroy: false
-      } },
+      { $match: { $and:queryConditions }  },
       {
         $lookup:
           {

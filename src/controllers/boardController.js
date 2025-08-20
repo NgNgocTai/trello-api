@@ -3,17 +3,10 @@ import ApiError from '~/utils/ApiError'
 import { boardService } from '~/services/boardService'
 const createNew = async (req, res, next) => {
   try {
-    console.log('req.body:' + req.body)
-    console.log('req.body: ', req.body)
-    console.log('req.query: ', req.query)
-    console.log('req.params: ', req.params)
-    // console.log('req.files: ', req.files)
-    // console.log('req.cookies: ', req.cookies)
-    // console.log('req.jwtDecoded: ', req.jwtDecoded)
     //Tiếp đến là điều hướng dữ liệu sang tầng service
-    const createdBoard = await boardService.createNew(req.body)
+    const userId = req.jwtDecoded._id
+    const createdBoard = await boardService.createNew(userId, req.body)
 
-    // throw new ApiError(StatusCodes.BAD_GATEWAY, 'Khong on roi')
     //Có kết quả thì trả về Client
     res.status(StatusCodes.CREATED).json(createdBoard)
   } catch (err) {
@@ -25,8 +18,9 @@ const createNew = async (req, res, next) => {
 
 const getDetails = async (req, res, next) => {
   try {
+    const userId = req.jwtDecoded._id
     const boardId = req.params.id
-    const board = await boardService.getDetails(boardId)
+    const board = await boardService.getDetails(userId, boardId)
 
     res.status(StatusCodes.OK).json(board)
   } catch (error) {
@@ -36,7 +30,6 @@ const getDetails = async (req, res, next) => {
 const getBoards = async (req, res, next) => {
   try {
     const userId = req.jwtDecoded._id
-    console.log(userId)
     //Lấy params là page và itemsPerPage truyền trong query từ url
     const { page, itemsPerPage } = req.query
     const result = await boardService.getBoards(userId, page, itemsPerPage)

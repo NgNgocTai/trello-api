@@ -6,14 +6,14 @@ import { cloneDeep } from 'lodash'
 import { columnModel } from '~/models/columnModel'
 import { cardModel } from '~/models/cardModel'
 import { DEFAULT_ITEMS_PER_PAGE, DEFAULT_PAGE } from '~/utils/constants'
-const createNew = async (data) => {
+const createNew = async (userId, reqBody) => {
   // eslint-disable-next-line no-useless-catch
   try {
     const newBoard = {
-      ...data,
-      slug: slugify(data.title)
+      ...reqBody,
+      slug: slugify(reqBody.title)
     }
-    const createdBoard = await boardModel.createNew(newBoard)
+    const createdBoard = await boardModel.createNew(userId, newBoard)
     // console.log(createdBoard)
 
     //Lấy bản ghi board sau khi gọi (tùy mục đích có cần bước này không)
@@ -24,10 +24,10 @@ const createNew = async (data) => {
   }
 }
 
-const getDetails = async (id) => {
+const getDetails = async (userId, boardId) => {
   // eslint-disable-next-line no-useless-catch
   try {
-    const board = await boardModel.getDetails(id)
+    const board = await boardModel.getDetails(userId, boardId)
     if (!board) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Board not found')
     }
