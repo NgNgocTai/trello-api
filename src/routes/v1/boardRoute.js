@@ -8,9 +8,7 @@ const Router = express.Router()
 
 //authMiddleware để đảm bảo accessToken của user phải hợp lệ đã (login thành công) thì mới được thực hiện các tác vụ sau
 Router.route('/')
-  .get(authMiddleware.isAuthorized, (req, res) => {
-    res.status(StatusCodes.OK).json({ message:'Note : API get list post' })
-  })
+  .get(authMiddleware.isAuthorized, boardController.getBoards)
   .post(authMiddleware.isAuthorized, boardValidation.createNew, boardController.createNew)
 
 Router.route('/:id')

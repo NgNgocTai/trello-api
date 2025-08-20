@@ -33,6 +33,18 @@ const getDetails = async (req, res, next) => {
     next(error)
   }
 }
+const getBoards = async (req, res, next) => {
+  try {
+    const userId = req.jwtDecoded._id
+    //Lấy params là page và itemsPerPage truyền trong query từ url
+    const { page, itemsPerPage } = req.query
+    const result = boardService.getBoards(userId, page, itemsPerPage)
+
+    res.status(StatusCodes.OK).json(result)
+  } catch (error) {
+    next(error)
+  }
+}
 
 const updateBoard = async (req, res, next) => {
   try {
@@ -52,4 +64,4 @@ const moveCardToDifferentColumn = async (req, res, next) => {
     next(error)
   }
 }
-export const boardController = { createNew, getDetails, updateBoard, moveCardToDifferentColumn }
+export const boardController = { createNew, getDetails, updateBoard, moveCardToDifferentColumn, getBoards }

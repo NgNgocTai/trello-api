@@ -5,6 +5,7 @@ import { ObjectId } from 'mongodb'
 import { BOARD_TYPES } from '~/utils/constants'
 import { columnModel } from '~/models/columnModel'
 import { cardModel } from '~/models/cardModel'
+import { pagingSkipValue } from '~/utils/algorithms'
 // Define Collection (name & schema)
 const BOARD_COLLECTION_NAME = 'boards'
 const BOARD_COLLECTION_SCHEMA = Joi.object({
@@ -13,6 +14,12 @@ const BOARD_COLLECTION_SCHEMA = Joi.object({
   description: Joi.string().required().min(3).max(256).trim().strict(),
   type:Joi.string().valid(BOARD_TYPES.PUBLIC, BOARD_TYPES.PRIVATE).required(),
   columnOrderIds: Joi.array().items(
+    Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
+  ).default([]),
+  ownerIds: Joi.array().items(
+    Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
+  ).default([]),
+  memberIds: Joi.array().items(
     Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
   ).default([]),
 
@@ -24,7 +31,7 @@ const BOARD_COLLECTION_SCHEMA = Joi.object({
 const INVALID_UPDATE_FIELDS =['id', 'createdAt']
 
 const validateBeforeCreate = async(data) => {
-  return await BOARD_COLLECTION_SCHEMA.validateAsync(data, { abortEarly:false }) 
+  return await BOARD_COLLECTION_SCHEMA.validateAsync(data, { abortEarly:false })
 }
 
 const createNew = async (data) => {
@@ -33,7 +40,7 @@ const createNew = async (data) => {
     const createdBoard = await getDb().collection(BOARD_COLLECTION_NAME).insertOne(validData)
     return createdBoard
   } catch (error) {
-    throw new Error(error) // new Error để lấy dc cả StackTrace, error không thì không lấy được 
+    throw new Error(error) // new Error để lấy dc cả StackTrace, error không thì không lấy được
   }
 }
 
@@ -54,7 +61,7 @@ const getDetails = async(id) => {
   try {
     // const result = await getDb().collection(BOARD_COLLECTION_NAME).findOne({ _id:new ObjectId(id) })
     const result = await getDb().collection(BOARD_COLLECTION_NAME).aggregate([
-      { $match: { 
+      { $match: {
         _id: new ObjectId(id),
         _destroy: false
       } },
@@ -143,6 +150,49 @@ const pullColumnOrderIds = async (column) => {
     throw new Error(error)
   }
 }
+
+const getBoards = async (userId, page, itemsPerPage) => {
+  try {
+    //Điều kiện
+    const queryConditions = [
+      //Board chưa bị xóa
+      { _destroy:false },
+      //user thực hiện request phải nằm trong owner hoặc member
+      { $or:[
+        { ownerIds: { $all: [new ObjectId(userId)] } },
+        { memberIds: { $all: [new ObjectId(userId)] } }
+      ] }
+    ]
+
+    const query = await getDb().collection(BOARD_COLLECTION_NAME).aggregate([
+      { $match:{ $and:queryConditions } },
+      //sort title board theo thứ tự từ A-->Z
+      { $sort: { title:1 } },
+      //Xử lý nhiều luồng trong một query
+      { $facet: {
+        //Luồng thứ nhất: Query Boards
+        'queryBoards':[
+          { $skip: pagingSkipValue(page, itemsPerPage) },
+          { $limit: itemsPerPage } // Giới hạn số lượng bản ghi trả về trên một page
+        ],
+        //Luồng thứ hai: Query đếm số tổng bản ghi boards trong db và trả kqua vào biến countedAllBoards
+        'queryTotalBoards':[{ $count:'countedAllBoards' }]
+      } }
+    ],
+    { collation:{ locale:'en' } }
+    ).toArray()
+    console.log('query:', query)
+    const res = query[0]
+
+    return {
+      boards:res.queryBoards || [],
+      totalBoards:res.queryTotalBoards[0]?.countedAllBoards|| 0
+    }
+
+  } catch (error) {
+    throw new Error(error)
+  }
+}
 export const boardModel = {
   BOARD_COLLECTION_NAME,
   BOARD_COLLECTION_SCHEMA,
@@ -151,5 +201,6 @@ export const boardModel = {
   getDetails,
   pushColumnOrderIds,
   updateBoard,
-  pullColumnOrderIds
+  pullColumnOrderIds,
+  getBoards
 }
