@@ -191,7 +191,7 @@ const getBoards = async (userId, page, itemsPerPage) => {
     ).toArray()
     console.log('query:', query)
     const res = query[0]
-    console.log('Boards result:', res.queryBoards, 'Total:', res.queryTotalBoards[0]?.countedAllBoards)
+    // console.log('Boards result:', res.queryBoards, 'Total:', res.queryTotalBoards[0]?.countedAllBoards)
 
     return {
       boards:res.queryBoards || [],
