@@ -1,5 +1,7 @@
 import { cardModel } from '~/models/cardModel'
 import { columnModel } from '~/models/columnModel'
+import { CloudinaryProvider } from '~/providers/CloudinaryProvider'
+
 const createNew = async (data) => {
   try {
     const newCard = { ...data }
@@ -11,18 +13,32 @@ const createNew = async (data) => {
       await columnModel.pushCardOrderIds(getNewCard)
     }
     return getNewCard
-} catch (error) {
+  } catch (error) {
     throw error
   }
 }
 
-const update = async (cardId, reqBody) => {
+const update = async (cardId, reqBody, cardCoverFile) => {
   try {
     const updateData = {
       ...reqBody,
       updatedAt: Date.now()
     }
-    const updatedCard = await cardModel.updateCard(cardId, updateData)
+    let updatedCard = {}
+    if (cardCoverFile) {
+      //Trường hợp upload file lên cloudinary
+      const uploadResult = await CloudinaryProvider.streamUpload(cardCoverFile.buffer, 'card-covers')
+      // console.log('🚀 ~ update ~ uploadResult:', uploadResult)
+
+      //Lưu lại url của cái file ảnh vào trong db
+      updatedCard = await cardModel.updateCard(cardId, {
+        cover: uploadResult.secure_url
+      })
+    } else {
+      //Các trường hợp update chung như title, description
+      updatedCard = await cardModel.updateCard(cardId, updateData)
+    }
+
 
     return updatedCard
   } catch (error) { throw error }

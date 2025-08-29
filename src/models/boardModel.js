@@ -6,6 +6,8 @@ import { BOARD_TYPES } from '~/utils/constants'
 import { columnModel } from '~/models/columnModel'
 import { cardModel } from '~/models/cardModel'
 import { pagingSkipValue } from '~/utils/algorithms'
+import { userModel } from '~/models/userModel'
+
 // Define Collection (name & schema)
 const BOARD_COLLECTION_NAME = 'boards'
 const BOARD_COLLECTION_SCHEMA = Joi.object({
@@ -72,7 +74,7 @@ const getDetails = async(userId, boardId) => {
     ]
     // const result = await getDb().collection(BOARD_COLLECTION_NAME).findOne({ _id:new ObjectId(id) })
     const result = await getDb().collection(BOARD_COLLECTION_NAME).aggregate([
-      { $match: { $and:queryConditions }  },
+      { $match: { $and:queryConditions } },
       {
         $lookup:
           {
@@ -90,7 +92,35 @@ const getDetails = async(userId, boardId) => {
             foreignField: 'boardId',
             as: 'cards'
           }
+      },
+      // Join ra danh sách owners
+      {
+        $lookup: {
+          from: userModel.USER_COLLECTION_NAME,
+          localField: 'ownerIds',
+          foreignField: '_id',
+          as: 'owners',
+          // pipeline để xử lý 1 hoặc nhiều luồng cần thiết
+          // $projec để chỉ định vài field không muốn trả về bằng cách gán giá trị là 0
+          pipeline: [
+            { $project: { password: 0, verifyToken: 0 } }
+          ]
+        }
+      },
+
+      // Join ra danh sách members
+      {
+        $lookup: {
+          from: userModel.USER_COLLECTION_NAME,
+          localField: 'memberIds',
+          foreignField: '_id',
+          as: 'members',
+          pipeline: [
+            { $project: { password: 0, verifyToken: 0 } }
+          ]
+        }
       }
+
     ]).toArray()
     // console.log(result) // Tự động lấy ra thêm 2 trường là columns:[] và cards:[]
     return result[0] || null
