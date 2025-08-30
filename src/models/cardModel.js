@@ -34,7 +34,7 @@ const CARD_COLLECTION_SCHEMA = Joi.object({
 const INVALID_UPDATE_FIELDS =['id', 'createdAt', 'boardId']
 
 const validateBeforeCreate = async(data) => {
-  return await CARD_COLLECTION_SCHEMA .validateAsync(data, { abortEarly:false }) 
+  return await CARD_COLLECTION_SCHEMA .validateAsync(data, { abortEarly:false })
 }
 
 const createNew = async (data) => {
@@ -59,7 +59,7 @@ const findOneById = async(cardId) => {
     return result
   } catch (error) {
     throw new Error(error)
-    }
+  }
 }
 const updateCard = async (cardId, updateData) => {
   try {
@@ -80,7 +80,7 @@ const updateCard = async (cardId, updateData) => {
       {
         $set:updateData
       },
-      { returnDocument: 'after' } 
+      { returnDocument: 'after' }
     )
     return updatedCard
   } catch (error) {
@@ -90,7 +90,7 @@ const updateCard = async (cardId, updateData) => {
 const deleteManyCardByColumnId= async(columnId) => {
   try {
     const result = await getDb().collection(CARD_COLLECTION_NAME).deleteMany(
-      { columnId: new ObjectId(columnId)}
+      { columnId: new ObjectId(columnId) }
     )
     console.log(result)
     return result
@@ -98,11 +98,40 @@ const deleteManyCardByColumnId= async(columnId) => {
     throw new Error(error)
   }
 }
+
+/**
+ * Đẩy một phần tử comment vào đầu mảng comments!
+ * – Trong JS, ngược lại với push (thêm phần tử vào cuối mảng) sẽ là unshift (thêm phần tử vào đầu mảng), trong mongo dung $push, nhưng bọc data vào Array để trong $each và chỉ định $position: 0
+ */
+const unshiftNewComment = async (cardId, commentData) => {
+  try {
+    const result = await getDb().collection(CARD_COLLECTION_NAME)
+      .findOneAndUpdate(
+        { _id: new ObjectId(cardId) },
+        {
+          $push: {
+            comments: {
+              $each: [commentData],
+              $position: 0
+            }
+          }
+        },
+        { returnDocument: 'after' } // Trả về document sau khi update
+      )
+
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+
 export const cardModel = {
   CARD_COLLECTION_NAME,
   CARD_COLLECTION_SCHEMA,
   createNew,
   findOneById,
   updateCard,
-  deleteManyCardByColumnId
+  deleteManyCardByColumnId,
+  unshiftNewComment
 }
