@@ -148,6 +148,41 @@ const pushColumnOrderIds = async (column) => {
     throw new Error(error)
   }
 }
+// Lấy 1 phần tử columnId ra khỏi mảng columnOrderIds
+const pullColumnOrderIds = async (column) => {
+  try {
+    const updateBoard = await getDb()
+      .collection(BOARD_COLLECTION_NAME)
+      .findOneAndUpdate(
+        { _id: new ObjectId(column.boardId) }, // tìm board theo id
+        {
+          $pull: { columnOrderIds: new ObjectId(column._id) }
+        },
+        { returnDocument: 'after' } // trả về document mới sau update
+      )
+
+    return updateBoard
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+const pushMembersIds = async (boardId, userId) => {
+  try {
+    const updateBoard = await getDb().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(boardId) },
+      {
+        $push: {
+          memberIds: new ObjectId(userId)
+        }
+      },
+      { returnDocument: 'after' } // native driver nên dùng returnDocument thay vì new
+    )
+    return updateBoard
+  } catch (error) {
+    throw new Error(error)
+  }
+}
 
 const updateBoard = async (boardId, updateData) => {
   try {
@@ -169,24 +204,6 @@ const updateBoard = async (boardId, updateData) => {
       { returnDocument: 'after' } // native driver nên dùng returnDocument thay vì new
     )
     return updatedBoard
-  } catch (error) {
-    throw new Error(error)
-  }
-}
-// Lấy 1 phần tử columnId ra khỏi mảng columnOrderIds
-const pullColumnOrderIds = async (column) => {
-  try {
-    const updateBoard = await getDb()
-      .collection(BOARD_COLLECTION_NAME)
-      .findOneAndUpdate(
-        { _id: new ObjectId(column.boardId) }, // tìm board theo id
-        {
-          $pull: { columnOrderIds: new ObjectId(column._id) }
-        },
-        { returnDocument: 'after' } // trả về document mới sau update
-      )
-
-    return updateBoard
   } catch (error) {
     throw new Error(error)
   }
@@ -244,5 +261,6 @@ export const boardModel = {
   pushColumnOrderIds,
   updateBoard,
   pullColumnOrderIds,
-  getBoards
+  getBoards,
+  pushMembersIds
 }

@@ -15,5 +15,13 @@ Router.route('/board')
 //Get invitations by user
 Router.route('/')
   .get(authMiddleware.isAuthorized, invitationController.getInvitations)
+
+//Cập nhật bản ghi boardInvitation
+Router.route('/board/:invitationId')
+  .put(
+    authMiddleware.isAuthorized,
+    invitationController.updateBoardInvitation
+  )
+
 export const invitationRoute = Router
 

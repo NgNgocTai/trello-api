@@ -7,10 +7,13 @@ import { errorHandlingMiddleware } from './middlewares/errorHandlingMiddleware'
 import cors from 'cors'
 import { corsOptions } from '~/config/cors'
 import cookieParser from 'cookie-parser'
+import http from 'http'
 const startServer = () => {
   const app = express()
   // Fix cái vụ Cache from disk của ExpressJS
   // https://stackoverflow.com/a/53240717/8324172
+
+  //Realtimesocket: https://socket.io/get-started/chat/?utm_source=chatgpt.com#integrating-socketio
   app.use((req, res, next) => {
     res.set('Cache-Control', 'no-store')
     next()
@@ -20,7 +23,7 @@ const startServer = () => {
 
   //Xử lý và config cors
   app.use(cors(corsOptions))
-  
+
   //Enable req.body json data
   app.use(express.json())
 
@@ -29,15 +32,19 @@ const startServer = () => {
   //Middleware xử lý lỗi tập trung
   app.use(errorHandlingMiddleware)
 
+  //Tạo 1 server mới bọc app của express để làm realtime với socket.io
+  const server = http.createServer(app)
+  
+
   //Môi trường Production(cụ thể là support Render)
   if (env.BUILD_MODE === 'production') {
-    app.listen(process.env.PORT, () => {
+    server.listen(process.env.PORT, () => {
       // eslint-disable-next-line no-console
       console.log(`3. Production: Hello Ngọc Tài Dev, I am running at port ${ process.env.PORT }/`)
     })
   } else {
     //Môi trường local dev
-    app.listen(env.LOCAL_DEV_APP_PORT, env.LOCAL_DEV_APP_HOST, () => {
+    server.listen(env.LOCAL_DEV_APP_PORT, env.LOCAL_DEV_APP_HOST, () => {
       // eslint-disable-next-line no-console
       console.log(`3.Local dev: Hello Ngọc Tài Dev, I am running at http://${ env.LOCAL_DEV_APP_HOST }:${ env.LOCAL_DEV_APP_PORT }/`)
     })
