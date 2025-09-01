@@ -9,6 +9,7 @@ import { corsOptions } from '~/config/cors'
 import cookieParser from 'cookie-parser'
 import http from 'http'
 import socketIo from 'socket.io'
+import { inviteUserToBoardSocket } from '~/sockets/inviteUserToBoardSocket'
 const startServer = () => {
   const app = express()
   // Fix cái vụ Cache from disk của ExpressJS
@@ -38,7 +39,8 @@ const startServer = () => {
   //Khởi tạo biến io với server và cors
   const io = socketIo(server, { cors: corsOptions })
   io.on('connection', (socket) => {
-    console.log('a user connected')
+    //Gọi các socket tùy theo tính năng ở đây
+    inviteUserToBoardSocket(socket)
   })
 
   //Môi trường Production(cụ thể là support Render)
