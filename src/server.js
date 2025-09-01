@@ -8,6 +8,7 @@ import cors from 'cors'
 import { corsOptions } from '~/config/cors'
 import cookieParser from 'cookie-parser'
 import http from 'http'
+import socketIo from 'socket.io'
 const startServer = () => {
   const app = express()
   // Fix cái vụ Cache from disk của ExpressJS
@@ -34,10 +35,15 @@ const startServer = () => {
 
   //Tạo 1 server mới bọc app của express để làm realtime với socket.io
   const server = http.createServer(app)
-  
+  //Khởi tạo biến io với server và cors
+  const io = socketIo(server, { cors: corsOptions })
+  io.on('connection', (socket) => {
+    console.log('a user connected')
+  })
 
   //Môi trường Production(cụ thể là support Render)
   if (env.BUILD_MODE === 'production') {
+    //Dùng server listen thay cho app do server bao gồm app express app + config socket.io
     server.listen(process.env.PORT, () => {
       // eslint-disable-next-line no-console
       console.log(`3. Production: Hello Ngọc Tài Dev, I am running at port ${ process.env.PORT }/`)
