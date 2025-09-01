@@ -1,4 +1,4 @@
-import { ApiError } from '~/utils/ApiError'
+import ApiError from '~/utils/ApiError'
 import { userModel } from '~/models/userModel'
 import { boardModel } from '~/models/boardModel'
 import { invitationModel } from '~/models/invitationModel'
@@ -34,7 +34,7 @@ const createNewBoardInvitation = async (reqBody, inviterId) => {
     }
 
     // Gọi sang Model để lưu vào DB
-    const createdInvitation = await invitationModel.createNewInvitation(newInvitationData)
+    const createdInvitation = await invitationModel.createNewBoardInvitation(newInvitationData)
     const getInvitation = await invitationModel.findOneById(createdInvitation.insertedId.toString())
 
     // Ngoài thông tin của cái board invitation mới tạo thì trả về đủ cả luồng board, inviter, invitee cho FE thoải mái xử lý.
@@ -49,6 +49,26 @@ const createNewBoardInvitation = async (reqBody, inviterId) => {
   } catch (error) { throw error }
 }
 
+const getInvitations = async (userId) => {
+  try {
+    const getInvitations = await invitationModel.findByUser(userId)
+    // console.log("🚀 ~ getInvitations ~ getInvitations:", getInvitations)
+
+    //Do dữ liệu invier, invitee, board đang là mảng 1 phần tử --> chuyển về json object trả cho FE
+    const resInvitations = getInvitations.map(i => {
+      return {
+        ...i,
+        inviter: i.inviter[0] || {},
+        invitee: i.invitee[0] || {},
+        board: i.board[0] || {}
+      }
+    })
+
+    return resInvitations
+  } catch(error) {throw error}
+}
+
 export const invitationService = {
-  createNewBoardInvitation
+  createNewBoardInvitation,
+  getInvitations
 }

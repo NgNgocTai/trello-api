@@ -1,4 +1,3 @@
-
 import { userModel } from '~/models/userModel'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '~/utils/ApiError'

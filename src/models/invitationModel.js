@@ -1,8 +1,10 @@
 import Joi from 'joi'
 import { ObjectId } from 'mongodb'
-import { GET_DB } from '~/config/mongodb'
+import { getDb} from '~/config/mongodb'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 import { INVITATION_TYPES, BOARD_INVITATION_STATUS } from '~/utils/constants'
+import { userModel } from '~/models/userModel'
+import { boardModel } from './boardModel'
 
 // Define Collection (name & schema)
 const INVITATION_COLLECTION_NAME = 'invitations'
@@ -47,15 +49,15 @@ const createNewBoardInvitation = async (data) => {
       }
     }
 
-    // GỌi insert vào DB
-    const createdInvitation = await GET_DB().collection(INVITATION_COLLECTION_NAME).insertOne(newInvitationToAdd)
+    // Goi insert vào DB
+    const createdInvitation = await getDb().collection(INVITATION_COLLECTION_NAME).insertOne(newInvitationToAdd)
     return createdInvitation
   } catch (error) { throw new Error(error) }
 }
 
 const findOneById = async (invitationId) => {
   try {
-    const result = await GET_DB().collection(INVITATION_COLLECTION_NAME).findOne({
+    const result = await getDb().collection(INVITATION_COLLECTION_NAME).findOne({
       _id: new ObjectId(invitationId)
     })
     return result
@@ -79,7 +81,7 @@ const update = async (invitationId, updateData) => {
       }
     }
 
-    const result = await GET_DB().collection(INVITATION_COLLECTION_NAME).findOneAndUpdate(
+    const result = await getDb().collection(INVITATION_COLLECTION_NAME).findOneAndUpdate(
       { _id: new ObjectId(invitationId) },
       { $set: updateData },
       { returnDocument: 'after' } // sẽ trả về kết quả mới sau khi cập nhật
@@ -89,10 +91,67 @@ const update = async (invitationId, updateData) => {
   } catch (error) { throw new Error(error) }
 }
 
+//Query tổng hợp lấy invitation thuộc về user cụ thể 
+const findByUser = async(userId) => {
+  try {
+    //Điều kiện
+    const queryConditions = [
+      { inviteeId: new ObjectId(userId) }, //Tìm theo inviteeId - người được mời - chính là người đang thực hiện request này
+      { _destroy:false }
+    ]
+    const results = await getDb().collection(INVITATION_COLLECTION_NAME).aggregate([
+      { $match: { $and:queryConditions } },
+      {
+        $lookup: {
+          from: userModel.USER_COLLECTION_NAME,
+          localField: 'inviterId',
+          foreignField: '_id',
+          as: 'inviter',
+          // pipeline để xử lý 1 hoặc nhiều luồng cần thiết
+          // $projec để chỉ định vài field không muốn trả về bằng cách gán giá trị là 0
+          pipeline: [
+            { $project: { password: 0, verifyToken: 0 } }
+          ]
+        }
+      },
+      {
+        $lookup: {
+          from: userModel.USER_COLLECTION_NAME,
+          localField: 'inviteeId',
+          foreignField: '_id',
+          as: 'invitee',
+          // pipeline để xử lý 1 hoặc nhiều luồng cần thiết
+          // $projec để chỉ định vài field không muốn trả về bằng cách gán giá trị là 0
+          pipeline: [
+            { $project: { password: 0, verifyToken: 0 } }
+          ]
+        }
+      },
+      {
+        $lookup: {
+          from: boardModel.BOARD_COLLECTION_NAME,
+          localField: 'boardInvitation.boardId',
+          foreignField: '_id',
+          as: 'board',
+          // pipeline để xử lý 1 hoặc nhiều luồng cần thiết
+          // $projec để chỉ định vài field không muốn trả về bằng cách gán giá trị là 0
+          pipeline: [
+            { $project: { password: 0, verifyToken: 0 } }
+          ]
+        }
+      }
+    ]).toArray()
+    return results
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const invitationModel = {
   INVITATION_COLLECTION_NAME,
   INVITATION_COLLECTION_SCHEMA,
   createNewBoardInvitation,
   findOneById,
-  update
+  update,
+  findByUser
 }
