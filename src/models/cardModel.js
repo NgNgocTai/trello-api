@@ -3,6 +3,7 @@ import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 import { getDb } from '~/config/mongodb.js'
 import { ObjectId } from 'mongodb'
 import { EMAIL_RULE, EMAIL_RULE_MESSAGE } from '~/utils/validators'
+import { CARD_MEMBER_ACTIONS } from '~/utils/constants'
 // Define Collection (name & schema)
 const CARD_COLLECTION_NAME = 'cards'
 const CARD_COLLECTION_SCHEMA = Joi.object({
@@ -124,7 +125,32 @@ const unshiftNewComment = async (cardId, commentData) => {
     throw new Error(error)
   }
 }
+const updateMembers = async (cardId, incomingMemberInfo) => {
+  try {
+    // Tạo ra một biến updateCondition ban đầu là rỗng
+    let updateCondition = {}
 
+    if (incomingMemberInfo.action === CARD_MEMBER_ACTIONS.ADD) {
+      // Trường hợp Add, dùng $push
+      updateCondition = { $push: { memberIds: new ObjectId(incomingMemberInfo.userId) } }
+    }
+
+    if (incomingMemberInfo.action === CARD_MEMBER_ACTIONS.REMOVE) {
+      // Trường hợp Remove, dùng $pull
+      updateCondition = { $pull: { memberIds: new ObjectId(incomingMemberInfo.userId) } }
+    }
+
+    const result = await getDb().collection(CARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(cardId) },
+      updateCondition, // truyền cái updateCondition ở đây
+      { returnDocument: 'after' }
+    )
+
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
 
 export const cardModel = {
   CARD_COLLECTION_NAME,
@@ -133,5 +159,6 @@ export const cardModel = {
   findOneById,
   updateCard,
   deleteManyCardByColumnId,
-  unshiftNewComment
+  unshiftNewComment,
+  updateMembers
 }

@@ -45,6 +45,9 @@ const update = async (cardId, reqBody, cardCoverFile, userInfo) => {
       }
 
       updatedCard = await cardModel.unshiftNewComment(cardId, commentData)
+    } else if (updateData.incomingMemberInfo) {
+      //Trường hợp ADD hoặc REMOVE thành viên ra khỏi card
+      updatedCard = await cardModel.updateMembers(cardId, updateData.incomingMemberInfo)
     }
     else {
       //Các trường hợp update chung như title, description
